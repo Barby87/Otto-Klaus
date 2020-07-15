@@ -24,11 +24,53 @@
 
 <script>
 import { db } from '../main';
+import Swal from 'sweetalert2';
 export default {
     name: 'Edicion',
     data() {
         return {
             jugueteIdEditar: ''
+        }
+    },
+
+    // Los watch son poripiedades asíncronas que permiten detectar el estado o si hay cambios en una variable cualquiera que esté dentro del objeto data, reemplaza al async/await
+    watch: {
+        jugueteIdEditar() {
+            const { value: formValues } = Swal.fire({
+                // Con sweet alert2 se debe modificar los inputs a sintaxis de ES6 para poder referenciar la variable que está en la data de la vista.
+                title: 'Editando producto',
+                html:
+                    `Código: <input id="swal-input1" value="${this.jugueteIdEditar.codigo}" class="swal2-input">` +
+                    `Nombre: <input id="swal-input2" value="${this.jugueteIdEditar.nombre}" class="swal2-input">` +
+                    `Stock: <input id="swal-input3" value="${this.jugueteIdEditar.stock}" class="swal2-input">` +
+                    `Precio: <input id="swal-input4" value="${this.jugueteIdEditar.precio}" class="swal2-input">`,
+
+                focusConfirm: false,
+                preConfirm: () => {
+                    return [
+                        this.jugueteIdEditar.codigo = document.getElementById('swal-input1').value,
+                        this.jugueteIdEditar.nombre = document.getElementById('swal-input2').value,
+                        this.jugueteIdEditar.stock = document.getElementById('swal-input3').value,
+                        this.jugueteIdEditar.precio = document.getElementById('swal-input4').value
+                    ]
+                }
+            // EDITAR producto
+            }).then(() => {
+                console.log("Promesa");
+                db.collection("productos").doc(this.$store.getters.envioIdProducto).update({
+                    // Pasando los datos editados a la base de datos
+                    codigo: this.jugueteIdEditar.codigo,
+                    nombre: this.jugueteIdEditar.nombre,
+                    stock: this.jugueteIdEditar.stock,
+                    precio: this.jugueteIdEditar.precio
+                }).then(() => {
+                    console.log("Actualizado");
+                })
+            })
+
+            if(formValues) {  
+                Swal.fire(JSON.stringify(formValues))
+            }  
         }
     },
 
